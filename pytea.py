@@ -9,7 +9,19 @@ class TEA:
         self.k2 = int.from_bytes(self.key[8:12], 'little')
         self.k3 = int.from_bytes(self.key[12:16], 'little')
 
-    def encrypt(self, data):
+    def ZeroPadding(self, data):
+        l = len(data)
+        if l % 8 != 0:
+            n = l // 8 * 8 + 8 - l
+            data += b'\x00' * n
+        return data
+
+    def ZeroUnpadding(self, data):
+        return data.rstrip(b'\x00')
+
+    def Encrypt(self, data):
+        data = self.ZeroPadding(data)
+        print(data)
         result = b''
         for i in range(0,len(data),8):
             v0 = int.from_bytes(data[i:i + 4], 'little')
@@ -27,7 +39,8 @@ class TEA:
             result += v1.to_bytes(4,'little')
         return result
 
-    def decrypt(self, data):
+    def Decrypt(self, data):
+        assert(len(data) % 8 == 0)
         result = b''
         for i in range(0,len(data),8):
             v0 = int.from_bytes(data[i:i + 4], 'little')
@@ -42,4 +55,5 @@ class TEA:
                 sum -= delta
             result += v0.to_bytes(4,'little')
             result += v1.to_bytes(4,'little')
+        result = self.ZeroUnpadding(result)
         return result
